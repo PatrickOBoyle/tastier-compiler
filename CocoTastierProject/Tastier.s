@@ -130,6 +130,7 @@ L7
 stopTest
     B       stopTest
 ;Name: k, Type: integer, Kind: constant, Level: global, Init: True
+;Name: j, Type: integer, Kind: constant, Level: global, Init: False
 ;Name: apples, Type: boolean, Kind: constant, Level: global, Init: True
 ;Name: i, Type: integer, Kind: var, Level: global, Init: True
 ;Name: SumUp, Type: undef, Kind: proc, Level: global, Init: True
