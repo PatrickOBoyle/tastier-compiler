@@ -1,38 +1,42 @@
 using System;
- 
-namespace Tastier { 
+
+namespace Tastier {
 
 public class Obj { // properties of declared symbol
    public string name; // its name
    public int kind;    // var, proc or scope
    public int type;    // its type if var (undef for proc)
    public int level;   // lexic level: 0 = global; >= 1 local
-   public int adr;     // address (displacement) in scope 
+   public int adr;     // address (displacement) in scope
    public Obj next;    // ptr to next object in scope
    // for scopes
    public Obj outer;   // ptr to enclosing scope
    public Obj locals;  // ptr to locally declared objects
    public int nextAdr; // next free address in scope
+   public bool initialised = false; // whether or not it has been initialised
 }
 
 public class SymbolTable {
 
    const int // object kinds
-      var = 0, proc = 1, scope = 2; 
+      var = 0, proc = 1, scope = 2, constant = 3;
 
    const int // types
       undef = 0, integer = 1, boolean = 2;
+
+   const int // var sub-categories
+      scaler = 0, array = 1; // more such as sets, etc
 
    public Obj topScope; // topmost procedure scope
    public int curLevel; // nesting level of current scope
    public Obj undefObj; // object node for erroneous symbols
 
    public bool mainPresent;
-   
+
    Parser parser;
-   
+
    public SymbolTable(Parser parser) {
-      curLevel = -1; 
+      curLevel = -1;
       topScope = null;
       undefObj = new Obj();
       undefObj.name = "undef";
@@ -43,24 +47,64 @@ public class SymbolTable {
       undefObj.next = null;
       this.parser = parser;
       mainPresent = false;
+      undefObj.initialised = true;
    }
 
 // open new scope and make it the current scope (topScope)
    public void OpenScope() {
       Obj scop = new Obj();
       scop.name = "";
-      scop.kind = scope; 
-      scop.outer = topScope; 
+      scop.kind = scope;
+      scop.outer = topScope;
       scop.locals = null;
       scop.nextAdr = 0;
-      topScope = scop; 
+      topScope = scop;
       curLevel++;
    }
 
 // close current scope
    public void CloseScope() {
-      topScope = topScope.outer;
-      curLevel--;
+     Obj items = topScope.locals;
+
+     int type, kind, lexicalLevel;
+     string typeName, kindName, lexicalLevelName;
+
+     while ( items != null) {
+       type = items.type;
+       kind = items.kind;
+       lexicalLevel = items.level;
+
+       if(type == 0){
+         typeName = "undef";
+       }else if(type == 1){
+         typeName = "integer";
+       }else{
+         typeName = "boolean";
+       }
+
+       if(kind == 0){
+         kindName = "var";
+       }else if(kind == 1){
+         kindName = "proc";
+       }else if(kind == 2){
+         kindName = "scope";
+       }else{
+         kindName = "constant";
+       }
+
+       if(lexicalLevel == 0){
+         lexicalLevelName = "global";
+       }else{
+         lexicalLevelName = "local";
+       }
+
+       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Level: {3}, Init: {4}", items.name, typeName, kindName, lexicalLevelName, items.initialised);
+
+       items = items.next;
+     }
+
+     topScope = topScope.outer;
+     curLevel--;
    }
 
 // open new sub-scope and make it the current scope (topScope)
@@ -84,13 +128,13 @@ public class SymbolTable {
 
 // create new object node in current scope
    public Obj NewObj(string name, int kind, int type) {
-      Obj p, last; 
+      Obj p, last;
       Obj obj = new Obj();
       obj.name = name; obj.kind = kind;
-      obj.type = type; obj.level = curLevel; 
-      obj.next = null; 
+      obj.type = type; obj.level = curLevel;
+      obj.next = null;
       p = topScope.locals; last = null;
-      while (p != null) { 
+      while (p != null) {
          if (p.name == name)
             parser.SemErr("name declared twice");
          last = p; p = p.next;

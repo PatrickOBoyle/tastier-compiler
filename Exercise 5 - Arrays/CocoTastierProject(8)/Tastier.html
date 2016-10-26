@@ -14,12 +14,13 @@
 </head>
 <body>
 <h2 style="margin: 0.0px 0.0px 14.9px 0.0px; line-height: 22.0px; font: 18.0px Times; color: #000000; -webkit-text-stroke: #000000"><span class="s1"><b>Tastier Grammar</b></span></h2>
-<p class="p2"><span class="s1">Tastier =<span class="Apple-converted-space">    </span>"program" ident "{" {VarDecl} {ProcDecl} "}"</span></p>
+<p class="p2"><span class="s1">Tastier =<span class="Apple-converted-space">    </span>"program" ident "{" {ConstantDecl} {VarDecl} {ProcDecl} "}"</span></p>
 <p class="p2"><span class="s1"><br>
 </span></p>
 <p class="p2"><span class="s1">VarDecl =<span class="Apple-converted-space">    </span>Type ident {"," ident} ";"</span></p>
+<p class="p2"><span class="s1">ConstantDecl =<span class="Apple-converted-space"> </span>"const" Type ident {"," ident} ";"</span></p>
 <p class="p2"><span class="s1">ProcDecl = <span class="Apple-converted-space">  </span>"void" ident "(" ")"</span></p>
-<p class="p2"><span class="s2"><span class="Apple-converted-space">             </span></span><span class="s1">"{" {VarDecl} {ProcDecl} Stat {Stat} "}"</span></p>
+<p class="p2"><span class="s2"><span class="Apple-converted-space">             </span></span><span class="s1">"{" {ConstantDecl} {VarDecl} {ProcDecl} Stat {Stat} "}"</span></p>
 <p class="p2"><span class="s1"><br>
 </span></p>
 <p class="p2"><span class="s1">Type = <span class="Apple-converted-space">      </span>"int" | "bool"</span></p>
@@ -31,7 +32,7 @@
 <p class="p2"><span class="s1"><span class="Apple-converted-space">           </span>| "read" ident ";"</span></p>
 <p class="p2"><span class="s1"><span class="Apple-converted-space">           </span>| "write" Expr | string ";"</span></p>
 <p class="p2"><span class="s2"><span class="Apple-converted-space">           </span>| </span><span class="s1">"writeln" Expr ";"</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">           </span>| "{" {VarDecl} Stat {Stat} ”}”</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">           </span>| "{" {ConstantDecl} {VarDecl} Stat {Stat} ”}”</span></p>
 <p class="p2"><span class="s1"><br>
 </span></p>
 <p class="p2"><span class="s1">Expr = <span class="Apple-converted-space">      </span>SimExpr [RelOp SimExpr]</span></p>

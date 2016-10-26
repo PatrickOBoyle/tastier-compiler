@@ -2,25 +2,29 @@
 // and, for each one, print the sum of the values from 1 to n
 
 program Test {
+  const int k, j;
+  const bool apples;
 
-   int i;
+  int i;
 
    void SumUp() {
       int j, sum;
-      
+
       void Subtract() {
          i := i - 1;
       }
-      
+
       void Add() {
          if i > 0 {
-            sum := sum + i; 
+            sum := sum + i;
             Subtract();
             Add();
          }
       }
-      
+
       j := i;
+      k := 1;
+      apples := true;
       sum := 0;
       Add();
       write "The sum of the values from 1 to ";
@@ -31,6 +35,7 @@ program Test {
    void main() {
       write "Enter value for i (or 0 to stop): ";
       read i;
+
       while i > 0 {
          SumUp();
          write "Enter value for i (or 0 to stop): ";

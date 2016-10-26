@@ -1,14 +1,14 @@
 COMPILER Tastier
 
    const int // object kinds
-      var = 0, proc = 1;
+      var = 0, proc = 1, constant = 3;
 
    const int // types
       undef = 0, integer = 1, boolean = 2;
 
    public SymbolTable tab;
    public CodeGenerator gen;
-  
+
 /*-------------------------------------------------------------------------------------------*/
 
 CHARACTERS
@@ -86,7 +86,7 @@ Primary<out int reg,     // load Primary into register
                                // reset Z flag in CPSR
                                   gen.ResetZ(reg);
                             }
-                            else SemErr("variable expected");
+                            else SemErr("variable or constant expected");
                          .)
 
   | number               (.
@@ -159,6 +159,9 @@ ProcDecl<string progName>
   '(' ')'
   '{'
      {
+     ConstantDecl
+     }
+     {
      VarDecl
      }
      {
@@ -218,15 +221,19 @@ SimExpr<out int reg,     //load value of SimExpr into register
 Stat                     (. int type; string name; Obj obj; int reg; .)
 = Ident<out name>        (. obj = tab.Find(name); .)
   ( ":="                 (.
-                            if (obj.kind != var)
-                               SemErr("cannot assign to procedure");
+                            if ( obj.kind == proc || (obj.kind == constant && obj.initialised) )
+                               if(obj.kind != constant)
+                                SemErr("cannot assign to procedure");
+                               else
+                                SemErr("cannot assign to an initialised constant");
                          .)
     Expr<out reg,
          out type> ';'   (.
-                            if (type == obj.type)
-                               if (obj.level == 0)
-                                  gen.StoreGlobal(reg, obj.adr, name);
-                               else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
+                           if (type == obj.type)
+                              if (obj.level == 0)
+                                 gen.StoreGlobal(reg, obj.adr, name);
+                              else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
+                              obj.initialised = true;
                          .)
   | '(' ')' ';'          (.
                             if (obj.kind == proc)
@@ -275,7 +282,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
   Ident<out name> ';'    (.
                             obj = tab.Find(name);
                             if (obj.type == integer) {
-                               gen.ReadInteger(); 
+                               gen.ReadInteger();
                                if (obj.level == 0)
                                   gen.StoreGlobal(0, obj.adr, name);
                                else gen.StoreLocal(0, tab.curLevel-obj.level, obj.adr, name);
@@ -289,7 +296,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
          out type>       (.
                             switch (type) {
                                case integer: gen.WriteInteger(reg, false);
-                                             break; 
+                                             break;
                                case boolean: gen.WriteBoolean(false);
                                              break;
                             }
@@ -312,6 +319,7 @@ Stat                     (. int type; string name; Obj obj; int reg; .)
   ';'
 
 | '{'                      (. tab.OpenSubScope(); .)
+  { ConstantDecl }
   { VarDecl }
   Stat { Stat }
   '}'                      (. tab.CloseSubScope(); .)
@@ -323,6 +331,7 @@ Tastier                  (. string progName; .)
   = "program"
   Ident<out progName>    (. tab.OpenScope(); .)
   '{'
+    { ConstantDecl }
     { VarDecl }          // global variables
     { ProcDecl<progName> }
                          (. tab.CloseScope(); .)
@@ -363,6 +372,17 @@ VarDecl                  (. string name; int type; .)
   { ","
     Ident<out name>      (. tab.NewObj(name, var, type); .)
   } ";"
+.
+
+/*-------------------------------------------------------------------------------------------*/
+
+ConstantDecl             (. string name; int type; .)
+= "const"
+  Type<out type>
+  Ident<out name>        (. tab.NewObj(name, constant, type); .)
+  { ","
+    Ident<out name>      (. tab.NewObj(name, constant, type); .)
+  }";"
 .
 
 END Tastier.

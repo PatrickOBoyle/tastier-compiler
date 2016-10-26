@@ -12,3 +12,8 @@ compile: build
 
 clean:
 	rm -rf generated/
+
+all:
+	make build
+	make compile
+	make clean
