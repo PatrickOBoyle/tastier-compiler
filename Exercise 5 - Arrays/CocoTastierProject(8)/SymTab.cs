@@ -74,38 +74,42 @@ public class SymbolTable {
      Obj items = topScope.locals;
 
      int type, kind, lexicalLevel;
-     string typeName, kindName, lexicalLevelName;
+     string typeName, kindName, subcategoryName, lexicalLevelName;
 
      while ( items != null) {
        type = items.type;
        kind = items.kind;
        lexicalLevel = items.level;
 
-       if(type == 0){
+
+       if(type == 0)
          typeName = "undef";
-       }else if(type == 1){
+       else if(type == 1)
          typeName = "integer";
-       }else{
+       else
          typeName = "boolean";
-       }
 
-       if(kind == 0){
+       if(kind == 0)
          kindName = "var";
-       }else if(kind == 1){
+       else if(kind == 1)
          kindName = "proc";
-       }else if(kind == 2){
+       else if(kind == 2)
          kindName = "scope";
-       }else{
+       else
          kindName = "constant";
-       }
 
-       if(lexicalLevel == 0){
+       if(lexicalLevel == 0)
          lexicalLevelName = "global";
-       }else{
+       else
          lexicalLevelName = "local";
-       }
 
-       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Level: {3}, Init: {4}, Sub-Cat: {5}, Next Address: {6}", items.name, typeName, kindName, lexicalLevelName, items.initialised, items.subcategory, items.nextAdr);
+       if(items.subcategory == 0)
+         subcategoryName = "Scalar";
+       else
+         subcategoryName = "Array";
+
+
+       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Sub-Category: {3}, Level: {4}, Init: {5}, , Next Address: {6}", items.name, typeName, kindName, subcategoryName, lexicalLevelName, items.initialised, items.nextAdr);
 
        items = items.next;
      }
