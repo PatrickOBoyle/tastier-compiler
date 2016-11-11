@@ -253,8 +253,7 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
         | "["                (. int arrayIndex = 0; .)
           number             (. index = Convert.ToInt32(t.val); .)
           "]"
-
-        Ident<out arrayName> (.
+          Ident<out arrayName> (.
                               Obj arrayObj = tab.Find(arrayName);
 
                               if(arrayIndex > arrayObj.lastIndex | arrayIndex < 0)
@@ -423,9 +422,6 @@ VarDecl                  (. int type; string name; int subcategory = scalar; int
     "]"
   ]
   Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex); .)
-  { ","
-      Ident<out name>      (. tab.NewObj(name, var, type, scalar, -1); .)
-  }
   ";"
 .
 
