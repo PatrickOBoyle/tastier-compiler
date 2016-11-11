@@ -7,7 +7,8 @@ program Test {
 
   int i;
    void SumUp() {
-      int j, sum;
+      int j;
+      int sum;
 
       void Subtract() {
          i := i - 1;
