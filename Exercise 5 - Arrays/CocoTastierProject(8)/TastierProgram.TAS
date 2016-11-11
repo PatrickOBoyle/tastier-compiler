@@ -2,11 +2,10 @@
 // and, for each one, print the sum of the values from 1 to n
 
 program Test {
-  const int k, j;
-  const bool apples;
+  int[5] array;
+  int k;
 
   int i;
-
    void SumUp() {
       int j, sum;
 
@@ -23,8 +22,14 @@ program Test {
       }
 
       j := i;
-      k := 1;
-      apples := true;
+      array[0] := 1;
+      array[1] := 2;
+      array[2] := 3;
+      array[3] := 4;
+      array[4] := 5;
+
+      k := [0]array;
+
       sum := 0;
       Add();
       write "The sum of the values from 1 to ";

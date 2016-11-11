@@ -6,6 +6,9 @@ COMPILER Tastier
    const int // types
       undef = 0, integer = 1, boolean = 2;
 
+   const int // var sub-categories
+      scalar = 0, array = 1;
+
    public SymbolTable tab;
    public CodeGenerator gen;
 
@@ -149,7 +152,7 @@ ProcDecl<string progName>
                          (. Obj obj; string procName; .)
 = "void"
   Ident<out procName>    (.
-                            obj = tab.NewObj(procName, proc, undef);
+                            obj = tab.NewObj(procName, proc, undef, undef, -1);
                             if (procName == "main")
                                if (tab.curLevel == 0)
                                   tab.mainPresent = true;
@@ -218,23 +221,67 @@ SimExpr<out int reg,     //load value of SimExpr into register
 
 /*-------------------------------------------------------------------------------------------*/
 
-Stat                     (. int type; string name; Obj obj; int reg; .)
+Stat                     (. int type; string name; Obj obj; int reg = 0; int index = 0; string arrayName;  .)
 = Ident<out name>        (. obj = tab.Find(name); .)
-  ( ":="                 (.
+  [
+    "["
+        number          (.
+                          index = Convert.ToInt32(t.val);
+                          if(index > obj.lastIndex | index < 0)
+                            SemErr("Array index out of bounds");
+                        .)
+    "]"
+  ]
+  ( ":="
+                            (.
                             if ( obj.kind == proc || (obj.kind == constant && obj.initialised) )
                                if(obj.kind != constant)
                                 SemErr("cannot assign to procedure");
                                else
                                 SemErr("cannot assign to an initialised constant");
-                         .)
-    Expr<out reg,
-         out type> ';'   (.
-                           if (type == obj.type)
-                              if (obj.level == 0)
-                                 gen.StoreGlobal(reg, obj.adr, name);
-                              else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr, name);
-                              obj.initialised = true;
-                         .)
+                            .)
+
+        ( Expr<out reg,
+             out type>       (.
+                               if (type == obj.type)
+                                  if (obj.level == 0)
+                                     gen.StoreGlobal(reg, obj.adr + index, name);
+                                  else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr + index, name);
+                                  obj.initialised = true;
+                             .)
+
+        | "["                (. int arrayIndex = 0; .)
+          number             (. index = Convert.ToInt32(t.val); .)
+          "]"
+
+        Ident<out arrayName> (.
+                              Obj arrayObj = tab.Find(arrayName);
+
+                              if(arrayIndex > arrayObj.lastIndex | arrayIndex < 0)
+                                SemErr("Array index out of bounds");
+
+                              if(arrayObj.type != obj.type){
+                                SemErr("Error: incompatible types within assignment");
+                              }
+
+                              if (arrayObj.kind == var || arrayObj.kind == constant) {
+                                 if (arrayObj.level == 0)
+                                    gen.LoadGlobal(reg, arrayObj.adr + arrayIndex, arrayName);
+                                 else
+                                    gen.LoadLocal(reg, tab.curLevel-obj.level, arrayObj.adr + arrayIndex, arrayName);
+                                 if (obj.type == boolean)
+                                 // reset Z flag in CPSR
+                                    gen.ResetZ(reg);
+
+                                    if (obj.level == 0)
+                                      gen.StoreGlobal(reg, obj.adr + index, name);
+                                    else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr + index, name);
+                                      obj.initialised = true;
+                              }
+                           .)
+        )';'
+
+
   | '(' ')' ';'          (.
                             if (obj.kind == proc)
                                gen.Call(name);
@@ -366,12 +413,20 @@ Type<out int type>
 
 /*-------------------------------------------------------------------------------------------*/
 
-VarDecl                  (. string name; int type; .)
+VarDecl                  (. int type; string name; int subcategory = scalar; int maxIndex = -1; .)
 = Type<out type>
-  Ident<out name>        (. tab.NewObj(name, var, type); .)
+  [
+    "["                 (. subcategory = array; .)
+        number          (.
+                          maxIndex = Convert.ToInt32(t.val) - 1;
+                        .)
+    "]"
+  ]
+  Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex); .)
   { ","
-    Ident<out name>      (. tab.NewObj(name, var, type); .)
-  } ";"
+      Ident<out name>      (. tab.NewObj(name, var, type, scalar, -1); .)
+  }
+  ";"
 .
 
 /*-------------------------------------------------------------------------------------------*/
@@ -379,9 +434,9 @@ VarDecl                  (. string name; int type; .)
 ConstantDecl             (. string name; int type; .)
 = "const"
   Type<out type>
-  Ident<out name>        (. tab.NewObj(name, constant, type); .)
+  Ident<out name>        (. tab.NewObj(name, constant, type, undef, -1); .)
   { ","
-    Ident<out name>      (. tab.NewObj(name, constant, type); .)
+    Ident<out name>      (. tab.NewObj(name, constant, type, undef, -1); .)
   }";"
 .
 

@@ -6,6 +6,8 @@ public class Obj { // properties of declared symbol
    public string name; // its name
    public int kind;    // var, proc or scope
    public int type;    // its type if var (undef for proc)
+   public int subcategory; // defines a scalar or array
+
    public int level;   // lexic level: 0 = global; >= 1 local
    public int adr;     // address (displacement) in scope
    public Obj next;    // ptr to next object in scope
@@ -14,6 +16,9 @@ public class Obj { // properties of declared symbol
    public Obj locals;  // ptr to locally declared objects
    public int nextAdr; // next free address in scope
    public bool initialised = false; // whether or not it has been initialised
+
+   // for arrays
+   public int lastIndex; // highest index for an array
 }
 
 public class SymbolTable {
@@ -25,7 +30,7 @@ public class SymbolTable {
       undef = 0, integer = 1, boolean = 2;
 
    const int // var sub-categories
-      scaler = 0, array = 1; // more such as sets, etc
+      scalar = 0, array = 1; // more such as sets, etc
 
    public Obj topScope; // topmost procedure scope
    public int curLevel; // nesting level of current scope
@@ -48,6 +53,8 @@ public class SymbolTable {
       this.parser = parser;
       mainPresent = false;
       undefObj.initialised = true;
+      undefObj.subcategory = scalar;
+      undefObj.lastIndex = -1;
    }
 
 // open new scope and make it the current scope (topScope)
@@ -98,7 +105,7 @@ public class SymbolTable {
          lexicalLevelName = "local";
        }
 
-       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Level: {3}, Init: {4}", items.name, typeName, kindName, lexicalLevelName, items.initialised);
+       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Level: {3}, Init: {4}, Sub-Cat: {5}, Next Address: {6}", items.name, typeName, kindName, lexicalLevelName, items.initialised, items.subcategory, items.nextAdr);
 
        items = items.next;
      }
@@ -120,18 +127,23 @@ public class SymbolTable {
       topScope = scop;
    }
 
-// close current sub-scope
-   public void CloseSubScope() {
-   // lexic level remains unchanged
-      topScope = topScope.outer;
-   }
+   // close current sub-scope
+      public void CloseSubScope() {
+      // update next available address in enclosing scope
+         topScope.outer.nextAdr = topScope.nextAdr;
+      // lexic level remains unchanged
+         topScope = topScope.outer;
+      }
 
 // create new object node in current scope
-   public Obj NewObj(string name, int kind, int type) {
+   public Obj NewObj(string name, int kind, int type, int subcategory, int lastIndex) {
       Obj p, last;
       Obj obj = new Obj();
       obj.name = name; obj.kind = kind;
       obj.type = type; obj.level = curLevel;
+      obj.subcategory = subcategory;
+      obj.lastIndex = lastIndex;
+
       obj.next = null;
       p = topScope.locals; last = null;
       while (p != null) {
@@ -143,6 +155,12 @@ public class SymbolTable {
          topScope.locals = obj; else last.next = obj;
       if (kind == var)
          obj.adr = topScope.nextAdr++;
+
+      // declare address space for array's items
+      if(obj.subcategory == array){
+          obj.nextAdr += obj.lastIndex + 1;
+      }
+
       return obj;
    }
 
