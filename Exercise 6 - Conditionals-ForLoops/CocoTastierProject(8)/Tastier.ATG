@@ -278,6 +278,38 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                                    obj.initialised = true;
                               }
                            .)
+        | '<' Expr<out reg,
+            out type> '>' '?' (.
+                                int reg2, type2, reg3, type3;
+                                int l1 = 0; int l2 = 1;
+                                if (type == boolean) {
+                                   l1 = gen.NewLabel();
+                                   gen.BranchFalse(l1);
+
+                                }
+                                else SemErr("boolean type expected");
+                              .)
+          Expr<out reg2,
+            out type2> ':'  (.
+                              l2 = gen.NewLabel();
+                              gen.Branch(l2);
+                              gen.Label(l1);
+                              if (obj.level == 0)
+                                 gen.StoreGlobal(reg2, obj.adr + index, name);
+                              else
+                                 gen.StoreLocal(reg2, tab.curLevel-obj.level, obj.adr + index, name);
+                            .)
+
+          Expr<out reg3,
+              out type3>
+                            (. gen.Label(l2);
+                                if (obj.level == 0)
+                                   gen.StoreGlobal(reg3, obj.adr + index, name);
+                                else
+                                   gen.StoreLocal(reg3, tab.curLevel-obj.level, obj.adr + index, name);
+                            .)
+
+
         )';'
 
 
@@ -323,6 +355,31 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                             gen.Branch(l1);
                             gen.Label(l2);
                          .)
+
+| "for"
+
+  Stat                (.
+                            int loop, escape;
+                            loop = gen.NewLabel();
+                            gen.Label(loop); escape=0;
+                      .)
+  Stat
+  Expr<out reg,
+    out type>         (.
+                            if (type == boolean) {
+
+                               gen.BranchFalse(escape);
+                            }
+                            else SemErr("boolean type expected");
+                      .)
+
+    "do" "{"
+      Stat
+    "}"
+                      (.
+                            gen.Branch(loop);
+                            gen.Label(escape);
+                      .)
 
 | "read"
   Ident<out name> ';'    (.
