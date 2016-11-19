@@ -228,7 +228,7 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
         number          (.
                           index = Convert.ToInt32(t.val);
                           if(index > obj.lastIndex | index < 0)
-                            SemErr("Array index out of bounds");
+                            SemErr("Error: array index out of bounds");
                         .)
     "]"
   ]
@@ -257,7 +257,7 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                               Obj arrayObj = tab.Find(arrayName);
 
                               if(arrayIndex > arrayObj.lastIndex | arrayIndex < 0)
-                                SemErr("Array index out of bounds");
+                                SemErr("Error: array index out of bounds");
 
                               if(arrayObj.type != obj.type){
                                 SemErr("Error: incompatible types within assignment");
@@ -272,10 +272,10 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                                  // reset Z flag in CPSR
                                     gen.ResetZ(reg);
 
-                                    if (obj.level == 0)
-                                      gen.StoreGlobal(reg, obj.adr + index, name);
-                                    else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr + index, name);
-                                      obj.initialised = true;
+                                 if (obj.level == 0)
+                                   gen.StoreGlobal(reg, obj.adr + index, name);
+                                 else gen.StoreLocal(reg, tab.curLevel-obj.level, obj.adr + index, name);
+                                   obj.initialised = true;
                               }
                            .)
         )';'

@@ -10,6 +10,8 @@ program Test {
       int j;
       int sum;
 
+      int p;
+
       void Subtract() {
          i := i - 1;
       }
@@ -22,6 +24,7 @@ program Test {
          }
       }
 
+
       j := i;
       array[0] := 1;
       array[1] := 2;
@@ -29,7 +32,7 @@ program Test {
       array[3] := 4;
       array[4] := 5;
 
-      k := [0]array;
+      k := [3]array;
 
       sum := 0;
       Add();
