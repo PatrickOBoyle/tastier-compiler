@@ -49,8 +49,10 @@ program Test {
       write "Enter value for i (or 0 to stop): ";
       read i;
 
-
-
+      for z := 0; z < 5; z := z + 1;
+        do {
+          w := z;
+        }
 
       while i > 0 {
          SumUp();

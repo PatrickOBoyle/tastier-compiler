@@ -77,14 +77,25 @@ Primary<out int reg,     // load Primary into register
 =                        (.
                             type = undef;
                             reg = gen.GetRegister();
+                            int index = 0;
                          .)
-  ( Ident<out name>      (.
+  ( Ident<out name>
+  [
+    "["
+        number          (.
+                          index = Convert.ToInt32(t.val);
+                          if(index > obj.lastIndex | index < 0)
+                            SemErr("Error: array index out of bounds");
+                        .)
+    "]"
+  ]
+                          (.
                             obj = tab.Find(name); type = obj.type;
                             if (obj.kind == var) {
                                if (obj.level == 0)
-                                  gen.LoadGlobal(reg, obj.adr, name);
+                                  gen.LoadGlobal(reg, obj.adr + index, name);
                                else
-                                  gen.LoadLocal(reg, tab.curLevel-obj.level, obj.adr, name);
+                                  gen.LoadLocal(reg, tab.curLevel-obj.level, obj.adr + index, name);
                                if (type == boolean)
                                // reset Z flag in CPSR
                                   gen.ResetZ(reg);
@@ -251,8 +262,11 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                              .)
 
         | "["                (. int arrayIndex = 0; .)
-          number             (. index = Convert.ToInt32(t.val); .)
-          "]"
+          number             (. index = Convert.ToInt32(t.val);
+                                if(index > obj.lastIndex | index < 0)
+                                  SemErr("Error: array index out of bounds");
+                              .)
+          "]"                    
           Ident<out arrayName> (.
                               Obj arrayObj = tab.Find(arrayName);
 
@@ -363,7 +377,6 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                             loop = gen.NewLabel();
                             gen.Label(loop); escape=0;
                       .)
-  Stat
   Expr<out reg,
     out type>         (.
                             if (type == boolean) {
@@ -372,10 +385,11 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                             }
                             else SemErr("boolean type expected");
                       .)
-
-    "do" "{"
-      Stat
-    "}"
+  ";"
+  Stat
+  "do" "{"
+    Stat
+  "}"
                       (.
                             gen.Branch(loop);
                             gen.Label(escape);
@@ -479,6 +493,12 @@ VarDecl                  (. int type; string name; int subcategory = scalar; int
     "]"
   ]
   Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex); .)
+
+  (. if( obj.subcategory != array ) { .)
+    { ","
+      Ident<out name>      (. tab.NewObj(name, constant, type, undef, -1); .)
+    } ";"
+  (. } .)
   ";"
 .
 

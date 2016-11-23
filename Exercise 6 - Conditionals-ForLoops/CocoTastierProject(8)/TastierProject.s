@@ -169,7 +169,31 @@ L7
     BL      TastierReadInt
     LDR     R0, =4
     STR     R0, [R4, R0, LSL #2] ; i
+    LDR     R5, =0
+    LDR     R0, =2
+    STR     R5, [R4, R0, LSL #2] ; z
 L8
+    LDR     R0, =2
+    LDR     R5, [R4, R0, LSL #2] ; z
+    LDR     R6, =5
+    CMP     R5, R6
+    MOVLT   R5, #1
+    MOVGE   R5, #0
+    MOVS    R5, R5          ; reset Z flag in CPSR
+    BEQ     L0              ; jump on condition false
+    LDR     R0, =2
+    LDR     R5, [R4, R0, LSL #2] ; z
+    LDR     R6, =1
+    ADD     R5, R5, R6
+    LDR     R0, =2
+    STR     R5, [R4, R0, LSL #2] ; z
+    LDR     R0, =2
+    LDR     R5, [R4, R0, LSL #2] ; z
+    LDR     R0, =3
+    STR     R5, [R4, R0, LSL #2] ; w
+    B       L8
+L0
+L9
     LDR     R0, =4
     LDR     R5, [R4, R0, LSL #2] ; i
     LDR     R6, =0
@@ -177,21 +201,21 @@ L8
     MOVGT   R5, #1
     MOVLE   R5, #0
     MOVS    R5, R5          ; reset Z flag in CPSR
-    BEQ     L9              ; jump on condition false
+    BEQ     L10              ; jump on condition false
     ADD     R0, PC, #4      ; store return address
     STR     R0, [TOP]       ; in new stack frame
     B       SumUp
     ADD     R0, PC, #4      ; string address
     BL      TastierPrintString
-    B       L10
+    B       L11
     DCB     "Enter value for i (or 0 to stop): ", 0
     ALIGN
-L10
+L11
     BL      TastierReadInt
     LDR     R0, =4
     STR     R0, [R4, R0, LSL #2] ; i
-    B       L8
-L9
+    B       L9
+L10
 StopTest
     B       StopTest
 Main
@@ -201,8 +225,8 @@ Main
     B       MainBody
 ;Name: array, Type: integer, Kind: var, Sub-Category: Array, Level: global, Init: True, , Next Address: 5
 ;Name: k, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: z, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
-;Name: w, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
+;Name: z, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
+;Name: w, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
 ;Name: i, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
 ;Name: SumUp, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
 ;Name: main, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
