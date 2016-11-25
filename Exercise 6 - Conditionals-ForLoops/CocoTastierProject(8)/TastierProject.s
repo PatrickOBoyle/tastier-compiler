@@ -103,21 +103,23 @@ L4
     LDR     R5, [R4, R0, LSL #2] ; i
     STR     R5, [BP,#16]    ; j
     LDR     R5, =1
-    STR     R5, [R4]        ; array
-    LDR     R5, =2
-    LDR     R0, =1
-    STR     R5, [R4, R0, LSL #2] ; array
-    LDR     R5, =3
-    LDR     R0, =2
-    STR     R5, [R4, R0, LSL #2] ; array
-    LDR     R5, =4
     LDR     R0, =3
     STR     R5, [R4, R0, LSL #2] ; array
-    LDR     R5, =5
+    LDR     R5, =2
     LDR     R0, =4
     STR     R5, [R4, R0, LSL #2] ; array
-    LDR     R0, [R4]        ; array
-    LDR     R0, =4
+    LDR     R5, =3
+    LDR     R0, =5
+    STR     R5, [R4, R0, LSL #2] ; array
+    LDR     R5, =4
+    LDR     R0, =6
+    STR     R5, [R4, R0, LSL #2] ; array
+    LDR     R5, =5
+    LDR     R0, =7
+    STR     R5, [R4, R0, LSL #2] ; array
+    LDR     R0, =3
+    LDR     R0, [R4, R0, LSL #2] ; array
+    LDR     R0, =3
     STR     R0, [R4, R0, LSL #2] ; k
     LDR     R5, =0
     ADD     R0, BP, #16
@@ -170,10 +172,10 @@ L7
     LDR     R0, =4
     STR     R0, [R4, R0, LSL #2] ; i
     LDR     R5, =0
-    LDR     R0, =2
+    LDR     R0, =1
     STR     R5, [R4, R0, LSL #2] ; z
 L8
-    LDR     R0, =2
+    LDR     R0, =1
     LDR     R5, [R4, R0, LSL #2] ; z
     LDR     R6, =5
     CMP     R5, R6
@@ -181,15 +183,15 @@ L8
     MOVGE   R5, #0
     MOVS    R5, R5          ; reset Z flag in CPSR
     BEQ     L0              ; jump on condition false
-    LDR     R0, =2
+    LDR     R0, =1
     LDR     R5, [R4, R0, LSL #2] ; z
     LDR     R6, =1
     ADD     R5, R5, R6
-    LDR     R0, =2
+    LDR     R0, =1
     STR     R5, [R4, R0, LSL #2] ; z
-    LDR     R0, =2
+    LDR     R0, =1
     LDR     R5, [R4, R0, LSL #2] ; z
-    LDR     R0, =3
+    LDR     R0, =2
     STR     R5, [R4, R0, LSL #2] ; w
     B       L8
 L0
@@ -223,10 +225,10 @@ Main
     LDR     R1, =0          ; number of local variables
     BL      enter           ; build new stack frame
     B       MainBody
-;Name: array, Type: integer, Kind: var, Sub-Category: Array, Level: global, Init: True, , Next Address: 5
 ;Name: k, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
 ;Name: z, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
 ;Name: w, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
+;Name: array, Type: integer, Kind: var, Sub-Category: Array, Level: global, Init: True, , Next Address: 5
 ;Name: i, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
 ;Name: SumUp, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
 ;Name: main, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0

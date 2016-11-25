@@ -2,10 +2,11 @@
 // and, for each one, print the sum of the values from 1 to n
 
 program Test {
-  int[5] array;
   int k;
   int z;
   int w;
+
+  int[5] array;
 
   int i;
    void SumUp() {

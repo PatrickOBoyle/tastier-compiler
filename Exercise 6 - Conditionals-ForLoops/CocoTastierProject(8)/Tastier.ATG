@@ -79,18 +79,19 @@ Primary<out int reg,     // load Primary into register
                             reg = gen.GetRegister();
                             int index = 0;
                          .)
-  ( Ident<out name>
+  ( Ident<out name>      (. obj = tab.Find(name); type = obj.type; .)
   [
     "["
         number          (.
                           index = Convert.ToInt32(t.val);
+
                           if(index > obj.lastIndex | index < 0)
                             SemErr("Error: array index out of bounds");
                         .)
     "]"
   ]
                           (.
-                            obj = tab.Find(name); type = obj.type;
+
                             if (obj.kind == var) {
                                if (obj.level == 0)
                                   gen.LoadGlobal(reg, obj.adr + index, name);
@@ -262,11 +263,8 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                              .)
 
         | "["                (. int arrayIndex = 0; .)
-          number             (. index = Convert.ToInt32(t.val);
-                                if(index > obj.lastIndex | index < 0)
-                                  SemErr("Error: array index out of bounds");
-                              .)
-          "]"                    
+          number             (. index = Convert.ToInt32(t.val); .)
+          "]"
           Ident<out arrayName> (.
                               Obj arrayObj = tab.Find(arrayName);
 
@@ -380,7 +378,6 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
   Expr<out reg,
     out type>         (.
                             if (type == boolean) {
-
                                gen.BranchFalse(escape);
                             }
                             else SemErr("boolean type expected");
@@ -494,10 +491,10 @@ VarDecl                  (. int type; string name; int subcategory = scalar; int
   ]
   Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex); .)
 
-  (. if( obj.subcategory != array ) { .)
-    { ","
-      Ident<out name>      (. tab.NewObj(name, constant, type, undef, -1); .)
-    } ";"
+  (. if( subcategory != array ) { .)
+    [ ","
+      Ident<out name>      (. tab.NewObj(name, constant, type, undef, maxIndex); .)
+    ]
   (. } .)
   ";"
 .
