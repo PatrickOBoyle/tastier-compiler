@@ -56,20 +56,6 @@ Add
     B       AddBody
 ; Procedure SumUp
 SumUpBody
-    LDR     R5, =1
-    LDR     R6, =2
-    CMP     R5, R6
-    MOVLT   R5, #1
-    MOVGE   R5, #0
-    MOVS    R5, R5          ; reset Z flag in CPSR
-    BEQ     L3              ; jump on condition false
-    LDR     R5, =5
-    B       L4
-L3
-    STR     R5, [BP,#16]    ; j
-    LDR     R5, =15
-L4
-    STR     R5, [BP,#16]    ; j
     LDR     R0, =4
     LDR     R5, [R4, R0, LSL #2] ; i
     STR     R5, [BP,#16]    ; j
@@ -101,19 +87,19 @@ L4
     B       Add
     ADD     R0, PC, #4      ; string address
     BL      TastierPrintString
-    B       L5
+    B       L3
     DCB     "The sum of the values from 1 to ", 0
     ALIGN
-L5
+L3
     LDR     R5, [BP,#16]    ; j
     MOV     R0, R5
     BL      TastierPrintInt
     ADD     R0, PC, #4      ; string address
     BL      TastierPrintString
-    B       L6
+    B       L4
     DCB     " is ", 0
     ALIGN
-L6
+L4
     ADD     R0, BP, #16
     LDR     R1, =1
     LDR     R5, [R0, R1, LSL #2] ; sum
@@ -135,17 +121,17 @@ SumUp
 MainBody
     ADD     R0, PC, #4      ; string address
     BL      TastierPrintString
-    B       L7
+    B       L5
     DCB     "Enter value for i (or 0 to stop): ", 0
     ALIGN
-L7
+L5
     BL      TastierReadInt
     LDR     R0, =4
     STR     R0, [R4, R0, LSL #2] ; i
     LDR     R5, =0
     LDR     R0, =1
     STR     R5, [R4, R0, LSL #2] ; z
-L8
+L6
     LDR     R0, =1
     LDR     R5, [R4, R0, LSL #2] ; z
     LDR     R6, =5
@@ -164,8 +150,22 @@ L8
     LDR     R5, [R4, R0, LSL #2] ; z
     LDR     R0, =2
     STR     R5, [R4, R0, LSL #2] ; w
-    B       L8
+    B       L6
 L0
+    LDR     R5, =1
+    LDR     R6, =2
+    CMP     R5, R6
+    MOVGT   R5, #1
+    MOVLE   R5, #0
+    MOVS    R5, R5          ; reset Z flag in CPSR
+    BEQ     L7              ; jump on condition false
+    LDR     R5, =5
+    B       L8
+L7
+    STR     R5, [R4]        ; k
+    LDR     R5, =15
+L8
+    STR     R5, [R4]        ; k
 L9
     LDR     R0, =4
     LDR     R5, [R4, R0, LSL #2] ; i

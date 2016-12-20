@@ -27,9 +27,6 @@ program Test {
          }
       }
 
-      j := <1<2> ? 5:15;
-
-
       j := i;
       array[0] := 1;
       array[1] := 2;
@@ -54,6 +51,8 @@ program Test {
         do {
           w := z;
         }
+
+      k := < 1 > 2 > ? 5 : 15;
 
       while i > 0 {
          SumUp();

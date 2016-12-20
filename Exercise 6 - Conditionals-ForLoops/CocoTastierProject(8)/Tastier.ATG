@@ -297,7 +297,6 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                                 if (type == boolean) {
                                    l1 = gen.NewLabel();
                                    gen.BranchFalse(l1);
-
                                 }
                                 else SemErr("boolean type expected");
                               .)
@@ -320,8 +319,6 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
                                 else
                                    gen.StoreLocal(reg3, tab.curLevel-obj.level, obj.adr + index, name);
                             .)
-
-
         )';'
 
 
