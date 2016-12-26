@@ -1,0 +1,80 @@
+// program to read integer values n (n > 0) from the console
+// and, for each one, print the sum of the values from 1 to n
+
+program Test {
+  int k;
+  int z;
+  int w;
+
+  int[5] array;
+
+  int testVal;
+  int result;
+
+  int i;
+   void SumUp() {
+      int j;
+      int sum;
+
+      int p;
+
+      void Subtract() {
+         i := i - 1;
+      }
+
+      void Add() {
+         if i > 0 {
+            sum := sum + i;
+            Subtract();
+            Add();
+         }
+      }
+
+      j := i;
+      array[0] := 1;
+      array[1] := 2;
+      array[2] := 3;
+      array[3] := 4;
+      array[4] := 5;
+
+      k := [3]array;
+
+      sum := 0;
+      Add();
+      write "The sum of the values from 1 to ";
+      write j; write " is ";
+      writeln sum;
+   }
+
+   void main() {
+      write "Enter value for i (or 0 to stop): ";
+      read i;
+
+      for z := 0; z < 5; z := z + 1;
+        do {
+          w := z;
+        }
+
+      k := < 1 > 2 > ? 5 : 15;
+
+      testVal := 10;
+      result := 0;
+
+      switch testVal {
+        case 1:
+          result := 10 - 1;
+          break;
+        case 5:
+          result := 10 - 5;
+          break;
+        default:
+          result := 0;
+      }
+
+      while i > 0 {
+         SumUp();
+         write "Enter value for i (or 0 to stop): ";
+         read i;
+      }
+   }
+}
