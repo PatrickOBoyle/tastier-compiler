@@ -123,11 +123,33 @@ SumUp
     LDR     R1, =3          ; number of local variables
     BL      enter           ; build new stack frame
     B       SumUpBody
-;Name: j, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: True, , Next Address: 0
-;Name: sum, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: True, , Next Address: 0
-;Name: p, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: False, , Next Address: 0
-;Name: Subtract, Type: undef, Kind: proc, Sub-Category: Scalar, Level: local, Init: False, , Next Address: 0
-;Name: Add, Type: undef, Kind: proc, Sub-Category: Scalar, Level: local, Init: False, , Next Address: 0
+;Name: j, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: True, Adr: 0 , Next Address: 0
+;Name: sum, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: True, Adr: 1 , Next Address: 0
+;Name: p, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: False, Adr: 2 , Next Address: 0
+;Name: Subtract, Type: undef, Kind: proc, Sub-Category: Scalar, Level: local, Init: False, Adr: 0 , Next Address: 0
+;Name: Add, Type: undef, Kind: proc, Sub-Category: Scalar, Level: local, Init: False, Adr: 0 , Next Address: 0
+; Procedure cyka
+cykaBody
+    ADD     R2, BP, #16
+    LDR     R1, =-5
+    ADD     R2, R2, R1, LSL #2
+    LDR     R5, [R2]        ; tester
+    LDR     R6, =1
+    ADD     R5, R5, R6
+    ADD     R2, BP, #16
+    LDR     R1, =-5
+    ADD     R2, R2, R1, LSL #2
+    STR     R5, [R2]        ; tester
+    MOV     TOP, BP         ; reset top of stack
+    LDR     BP, [TOP,#12]   ; and stack base pointers
+    LDR     PC, [TOP]       ; return from cyka
+cyka
+    LDR     R0, =1          ; current lexic level
+    LDR     R1, =0          ; number of local variables
+    BL      enter           ; build new stack frame
+    B       cykaBody
+;Name: tester, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: True, Adr: -5 , Next Address: 0
+;Name: testerq, Type: integer, Kind: var, Sub-Category: Scalar, Level: local, Init: False, Adr: -6 , Next Address: 0
 MainBody
     ADD     R0, PC, #4      ; string address
     BL      TastierPrintString
@@ -181,6 +203,22 @@ L8
     LDR     R5, =10
     LDR     R2, =4
     STR     R5, [R4, R2, LSL #2] ; testVal
+    ADD     TOP, TOP, #8      ; create space for parameters
+    MOV     R2, BP          ; load current base pointer
+    LDR     R2, [R2,#8]
+    ADD     R2, R2, #16
+    LDR     R1, =4
+    ADD     R2, R2, R1, LSL #2
+    STR     R1, [TOP, #-4]      ; add to stack
+    MOV     R2, BP          ; load current base pointer
+    LDR     R2, [R2,#8]
+    ADD     R2, R2, #16
+    LDR     R1, =4
+    ADD     R2, R2, R1, LSL #2
+    STR     R1, [TOP, #-8]      ; add to stack
+    ADD     R0, PC, #4      ; store return address
+    STR     R0, [TOP]       ; in new stack frame
+    B       cyka
     LDR     R5, =0
     LDR     R2, =5
     STR     R5, [R4, R2, LSL #2] ; result
@@ -246,12 +284,13 @@ Main
     LDR     R1, =0          ; number of local variables
     BL      enter           ; build new stack frame
     B       MainBody
-;Name: k, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: z, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: w, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: array, Type: integer, Kind: var, Sub-Category: Array, Level: global, Init: True, , Next Address: 5
-;Name: testVal, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: result, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: i, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, , Next Address: 0
-;Name: SumUp, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
-;Name: main, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, , Next Address: 0
+;Name: k, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, Adr: 0 , Next Address: 0
+;Name: z, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, Adr: 1 , Next Address: 0
+;Name: w, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, Adr: 2 , Next Address: 0
+;Name: array, Type: integer, Kind: var, Sub-Category: Array, Level: global, Init: True, Adr: 3 , Next Address: 5
+;Name: testVal, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, Adr: 4 , Next Address: 0
+;Name: result, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, Adr: 5 , Next Address: 0
+;Name: i, Type: integer, Kind: var, Sub-Category: Scalar, Level: global, Init: True, Adr: 6 , Next Address: 0
+;Name: SumUp, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, Adr: 0 , Next Address: 0
+;Name: cyka, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, Adr: 0 , Next Address: 0
+;Name: main, Type: undef, Kind: proc, Sub-Category: Scalar, Level: global, Init: False, Adr: 0 , Next Address: 0

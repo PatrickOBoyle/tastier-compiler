@@ -12,7 +12,7 @@ program Test {
   int result;
 
   int i;
-   void SumUp() {
+  void SumUp() {
       int j;
       int sum;
 
@@ -46,6 +46,10 @@ program Test {
       writeln sum;
    }
 
+   void cyka(int tester, int testerq){
+     tester := tester + 1;
+   }
+
    void main() {
       write "Enter value for i (or 0 to stop): ";
       read i;
@@ -58,6 +62,7 @@ program Test {
       k := < 1 > 2 > ? 5 : 15;
 
       testVal := 10;
+      cyka(testVal, testVal);
       result := 0;
 
       switch testVal {

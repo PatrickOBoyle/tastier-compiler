@@ -1,5 +1,4 @@
 COMPILER Tastier
-
    const int // object kinds
       var = 0, proc = 1, constant = 3;
 
@@ -11,6 +10,16 @@ COMPILER Tastier
 
    public SymbolTable tab;
    public CodeGenerator gen;
+
+   public void padStack(int numParameters){
+      int bytePadding = numParameters * 4;
+      Console.WriteLine("    ADD     TOP, TOP, #{0}      ; create space for parameters", bytePadding);
+   }
+
+   public void addParamToStack(int paramNum){
+      int offset = -(paramNum * 4);
+      Console.WriteLine("    STR     R1, [TOP, #{0}]      ; add to stack", offset);
+   }
 
 /*-------------------------------------------------------------------------------------------*/
 
@@ -164,31 +173,19 @@ ProcDecl<string progName>
                          (. Obj obj; string procName; .)
 = "void"
   Ident<out procName>    (.
-                            obj = tab.NewObj(procName, proc, undef, undef, -1);
+                            obj = tab.NewObj(procName, proc, undef, undef, -1, 0, 0);
                             if (procName == "main")
                                if (tab.curLevel == 0)
                                   tab.mainPresent = true;
                                else SemErr("main not at lexic level 0");
                             tab.OpenScope();
                          .)
-  '('                    (. int paramCount = 0; Obj parameter; .)
-  /* Comments go here */
+  '('                    (. int paramCount = 0; .)
+  /* TODO: Don't forget to handle arrays */
   [
-    Type Ident<out paramName1>                 (.
-                                                paramCount = 1;
-                                                parameter = tab.Find(paramName);
-                                              .)
-    {
-      ',' Type Ident<out paramName2>           (.
-                                                paramCount += 1;
-                                                parameter = tab.Find(paramName);
-                                              .)
-    }
-
-
-
+    ParamDecl<out paramCount>
   ]
-  ')'
+  ')'                    (. obj.numParameters = paramCount; .)
   '{'
      {
      ConstantDecl
@@ -339,11 +336,42 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
         )';'
 
 
-  | '(' ')' ';'          (.
-                            if (obj.kind == proc)
-                               gen.Call(name);
-                            else SemErr("object is not a procedure");
-                         .)
+  |'('                      (.
+                              string paramName; Obj param; int numParams = 0;
+
+                            .)
+    [
+      Ident<out paramName>  (.
+                              padStack(obj.numParameters);
+                              if (obj.kind != proc)
+                                 SemErr("object is not a procedure");
+
+                              param = tab.Find(paramName);
+                              numParams += 1;
+                              gen.LoadLocalAddress(tab.curLevel-param.level, param.adr);
+                              addParamToStack(numParams);
+                            .)
+      {
+        "," Ident<out paramName>  (.
+                                param = tab.Find(paramName);
+                                numParams += 1;
+                                gen.LoadLocalAddress(tab.curLevel-param.level, param.adr);
+                                addParamToStack(numParams);
+                              .)
+      }
+    ]                         (.
+                                if(numParams != obj.numParameters)
+                                  SemErr("Error: incorrect number of parameters");
+
+                                // #1: add buffer to stack
+                                // #2: push addresses (loadLocalAddress) to stack space
+
+                              .)
+    ')' ';'                   (.
+                                  if (obj.kind == proc)
+                                    gen.Call(name);
+                                  else SemErr("object is not a procedure");
+                              .)
   )
 
 | "if"                   (. int l1, l2; l1 = 0; .)
@@ -516,7 +544,7 @@ Type<out int type>
 
 /*-------------------------------------------------------------------------------------------*/
 
-VarDecl                  (. int type; string name; int subcategory = scalar; int maxIndex = -1; .)
+VarDecl                 (. int type; string name; int subcategory = scalar; int maxIndex = -1; .)
 = Type<out type>
   [
     "["                 (. subcategory = array; .)
@@ -525,11 +553,11 @@ VarDecl                  (. int type; string name; int subcategory = scalar; int
                         .)
     "]"
   ]
-  Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex); .)
+  Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex, 0, 0); .)
 
   (. if( subcategory != array ) { .)
     [ ","
-      Ident<out name>      (. tab.NewObj(name, constant, type, undef, maxIndex); .)
+      Ident<out name>      (. tab.NewObj(name, var, type, undef, maxIndex, 0, 0); .)
     ]
   (. } .)
   ";"
@@ -540,10 +568,42 @@ VarDecl                  (. int type; string name; int subcategory = scalar; int
 ConstantDecl             (. string name; int type; .)
 = "const"
   Type<out type>
-  Ident<out name>        (. tab.NewObj(name, constant, type, undef, -1); .)
+  Ident<out name>        (. tab.NewObj(name, constant, type, undef, -1, 0, 0); .)
   { ","
-    Ident<out name>      (. tab.NewObj(name, constant, type, undef, -1); .)
+    Ident<out name>      (. tab.NewObj(name, constant, type, undef, -1, 0, 0); .)
   }";"
 .
 
+/*-------------------------------------------------------------------------------------------*/
+
+ParamDecl<out int numParameters>  (. int type; string name; int subcategory = scalar; int maxIndex = -1; int paramAdr = -5; numParameters = 0; .)
+= Type<out type>
+  [
+    "["                           (. subcategory = array; .)
+        number                    (.
+                                     maxIndex = Convert.ToInt32(t.val) - 1;
+                                  .)
+    "]"
+  ]
+  Ident<out name>                 (.
+                                    tab.NewObj(name, var, type, subcategory, maxIndex, paramAdr, 0);
+                                    paramAdr -= 1;
+                                    numParameters += 1;
+                                  .)
+  { ","
+    Type<out type>
+    [
+      "["                           (. subcategory = array; numParameters = 0; .)
+          number                    (.
+                                       maxIndex = Convert.ToInt32(t.val) - 1;
+                                    .)
+      "]"
+    ]
+    Ident<out name>                 (.
+                                      tab.NewObj(name, var, type, subcategory, maxIndex, paramAdr, 0);
+                                      paramAdr -= 1;
+                                      numParameters += 1;
+                                    .)
+  }
+.
 END Tastier.

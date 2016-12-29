@@ -19,6 +19,7 @@ public class Obj { // properties of declared symbol
 
    // for arrays
    public int lastIndex; // highest index for an array
+   public int numParameters;     // the number of parameters a procedure has
 }
 
 public class SymbolTable {
@@ -55,6 +56,7 @@ public class SymbolTable {
       undefObj.initialised = true;
       undefObj.subcategory = scalar;
       undefObj.lastIndex = -1;
+      undefObj.numParameters = 0;
    }
 
 // open new scope and make it the current scope (topScope)
@@ -109,7 +111,7 @@ public class SymbolTable {
          subcategoryName = "Array";
 
 
-       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Sub-Category: {3}, Level: {4}, Init: {5}, , Next Address: {6}", items.name, typeName, kindName, subcategoryName, lexicalLevelName, items.initialised, items.nextAdr);
+       Console.WriteLine(";Name: {0}, Type: {1}, Kind: {2}, Sub-Category: {3}, Level: {4}, Init: {5}, Adr: {6} , Next Address: {7}", items.name, typeName, kindName, subcategoryName, lexicalLevelName, items.initialised, items.adr, items.nextAdr);
 
        items = items.next;
      }
@@ -140,13 +142,14 @@ public class SymbolTable {
       }
 
 // create new object node in current scope
-   public Obj NewObj(string name, int kind, int type, int subcategory, int lastIndex) {
+   public Obj NewObj(string name, int kind, int type, int subcategory, int lastIndex, int adr, int numParameters) {
       Obj p, last;
       Obj obj = new Obj();
       obj.name = name; obj.kind = kind;
       obj.type = type; obj.level = curLevel;
       obj.subcategory = subcategory;
       obj.lastIndex = lastIndex;
+      obj.numParameters = numParameters;
 
       obj.next = null;
       p = topScope.locals; last = null;
@@ -157,9 +160,12 @@ public class SymbolTable {
       }
       if (last == null)
          topScope.locals = obj; else last.next = obj;
-      if (kind == var)
-         obj.adr = topScope.nextAdr++;
-
+      if (kind == var){
+        if(adr <= -5)
+          obj.adr = adr;
+        else
+          obj.adr = topScope.nextAdr++;
+      }
       // declare address space for array's items
       if(obj.subcategory == array){
           obj.nextAdr += obj.lastIndex + 1;

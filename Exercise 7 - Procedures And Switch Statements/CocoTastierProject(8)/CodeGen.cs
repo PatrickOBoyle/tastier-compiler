@@ -292,7 +292,7 @@ public class CodeGenerator {
          Console.WriteLine("    SUB     R{0}, R{0}, R{1}", leftOp, rightOp);
    }
 
-// method to generate ARM assembly language code for 
+// method to generate ARM assembly language code for
    public void MulOp(Op op, int leftOp, int rightOp) {
       switch (op) {
          case Op.MUL: // note: ordering of operands in generated instruction
