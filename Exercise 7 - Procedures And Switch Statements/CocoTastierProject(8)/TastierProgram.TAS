@@ -2,15 +2,7 @@
 // and, for each one, print the sum of the values from 1 to n
 
 program Test {
-  int k;
-  int z;
-  int w;
-
-  int[5] array;
-
-  int testVal;
-  int result;
-
+  const bool TRUE;
   int i;
 
   void SumUp() {
@@ -32,13 +24,6 @@ program Test {
       }
 
       j := i;
-      array[0] := 1;
-      array[1] := 2;
-      array[2] := 3;
-      array[3] := 4;
-      array[4] := 5;
-
-      k := [3]array;
 
       sum := 0;
       Add();
@@ -47,23 +32,43 @@ program Test {
       writeln sum;
    }
 
-   void cyka(int tester, int testerq){
-     tester := tester + 1;
+   void AddParams(int x, int y){
+     x := x + y;
    }
 
    void main() {
+      const int ONEHUNDRED;
+
+      int z, w, k, testVal, result;
+      int[5] array;
+
+      ONEHUNDRED := 100;
+
       write "Enter value for i (or 0 to stop): ";
       read i;
+
+      TRUE := true;
 
       for z := 0; z < 5; z := z + 1;
         do {
           w := z;
         }
 
+      array[0] := 1;
+      array[1] := 2;
+      array[2] := 3;
+      array[3] := 4;
+      array[4] := 5;
+
+      k := [3]array;
+
       k := < 1 > 2 > ? 5 : 15;
 
       testVal := 10;
-      cyka(testVal, testVal);
+      k := 5;
+      
+      AddParams(testVal, k);
+
       result := 0;
 
       switch testVal {

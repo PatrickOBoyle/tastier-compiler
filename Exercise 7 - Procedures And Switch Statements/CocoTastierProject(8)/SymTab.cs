@@ -161,6 +161,7 @@ public class SymbolTable {
       if (last == null)
          topScope.locals = obj; else last.next = obj;
       if (kind == var){
+        // for parameters, all params have an address of at least -5 due to frames
         if(adr <= -5)
           obj.adr = adr;
         else

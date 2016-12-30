@@ -402,29 +402,29 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
       Stat
       ]               	 (. gen.Label(l2); .)
 
-| "switch"               (. int breakLabel = 0, switchReg; breakLabel = gen.NewLabel(); .)
+| "switch"               (. int escapeLabel; int switchReg; escapeLabel = gen.NewLabel(); .)
   Expr<out switchReg, out type>
   "{"
-      {                  (.gen.GetRegister();.)
+      {                  (. gen.GetRegister(); .)
         "case"
         Expr<out reg,
         out type>  ":"     (.
                               // labels for recognising cases
-                              int l1; l1 = 0;
-                              l1 = gen.NewLabel();
+                              int label;
+                              // generate the new label
+                              label = gen.NewLabel();
                               gen.RelOp(Op.EQU, reg, switchReg);
-                              gen.BranchFalse(l1);
+                              gen.BranchFalse(label);
                            .)
         Stat
         [
-          "break;"        (.gen.Branch(breakLabel);.)
+          "break;"        (.gen.Branch(escapeLabel);.)
         ]
-                          (. gen.Label(l1); .)
+                          (. gen.Label(label); .)
       }
-
       "default:"
       Stat
-    "}"                 (. gen.Label(breakLabel); .)
+    "}"                 (. gen.Label(escapeLabel); .)
 
 | "while"                (.
                             int l1, l2;
@@ -512,8 +512,6 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
   { ConstantDecl }
   { VarDecl }
   Stat { Stat }
-  { ConstantDecl }
-  { VarDecl }
   '}'                      (. tab.CloseSubScope(); .)
 .
 
@@ -570,9 +568,9 @@ VarDecl                 (. int type; string name; int subcategory = scalar; int 
   Ident<out name>       (. tab.NewObj(name, var, type, subcategory, maxIndex, 0, 0); .)
 
   (. if( subcategory != array ) { .)
-    [ ","
+    { ","
       Ident<out name>      (. tab.NewObj(name, var, type, undef, maxIndex, 0, 0); .)
-    ]
+    }
   (. } .)
   ";"
 .
