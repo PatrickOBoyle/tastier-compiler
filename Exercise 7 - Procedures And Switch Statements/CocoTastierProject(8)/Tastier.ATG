@@ -183,7 +183,6 @@ ProcDecl<string progName>
                             tab.OpenScope();
                          .)
   '('                    (. int paramCount = 0; .)
-
   [
     ParamDecl<out paramCount>
   ]
