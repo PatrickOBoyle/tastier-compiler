@@ -204,18 +204,11 @@ L8
     LDR     R2, =4
     STR     R5, [R4, R2, LSL #2] ; testVal
     ADD     TOP, TOP, #8      ; create space for parameters
-    MOV     R2, BP          ; load current base pointer
-    LDR     R2, [R2,#8]
-    ADD     R2, R2, #16
-    LDR     R1, =4
-    ADD     R2, R2, R1, LSL #2
-    STR     R1, [TOP, #-4]      ; add to stack
-    MOV     R2, BP          ; load current base pointer
-    LDR     R2, [R2,#8]
-    ADD     R2, R2, #16
-    LDR     R1, =4
-    ADD     R2, R2, R1, LSL #2
-    STR     R1, [TOP, #-8]      ; add to stack
+    LDR     R2, =4
+    ADD     R2, R4, R2, LSL #2
+    STR     R2, [TOP, #-4]      ; add to stack
+    LDR     R2, =4
+    STR     R2, [TOP, #-8]      ; add to stack
     ADD     R0, PC, #4      ; store return address
     STR     R0, [TOP]       ; in new stack frame
     B       cyka

@@ -11,14 +11,16 @@ COMPILER Tastier
    public SymbolTable tab;
    public CodeGenerator gen;
 
+   //
    public void padStack(int numParameters){
       int bytePadding = numParameters * 4;
       Console.WriteLine("    ADD     TOP, TOP, #{0}      ; create space for parameters", bytePadding);
    }
 
-   public void addParamToStack(int paramNum){
+   // helper method to add procedure parameters to the stack
+   public void addParamToStack(int paramNum, int register){
       int offset = -(paramNum * 4);
-      Console.WriteLine("    STR     R1, [TOP, #{0}]      ; add to stack", offset);
+      Console.WriteLine("    STR     R{1}, [TOP, #{0}]      ; add to stack", offset, register);
    }
 
 /*-------------------------------------------------------------------------------------------*/
@@ -181,7 +183,7 @@ ProcDecl<string progName>
                             tab.OpenScope();
                          .)
   '('                    (. int paramCount = 0; .)
-  /* TODO: Don't forget to handle arrays */
+
   [
     ParamDecl<out paramCount>
   ]
@@ -337,40 +339,49 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
 
 
   |'('                      (.
-                              string paramName; Obj param; int numParams = 0;
-
-                            .)
-    [
-      Ident<out paramName>  (.
-                              padStack(obj.numParameters);
                               if (obj.kind != proc)
                                  SemErr("object is not a procedure");
 
+                              string paramName; Obj param; int numParams = 0;
+                            .)
+    [                       (.
+                              // create space for params
+                              padStack(obj.numParameters);
+                            .)
+      Ident<out paramName>  (.
                               param = tab.Find(paramName);
                               numParams += 1;
-                              gen.LoadLocalAddress(tab.curLevel-param.level, param.adr);
-                              addParamToStack(numParams);
+                              // if global..
+                              if (obj.level == 0){
+                                gen.LoadIndexedGlobalAddress(param.adr);
+                                addParamToStack(numParams, 2);
+                              }else{
+                                gen.LoadLocalAddress(tab.curLevel-param.level, param.adr);
+                                addParamToStack(numParams, 1);
+                              }
                             .)
       {
         "," Ident<out paramName>  (.
                                 param = tab.Find(paramName);
                                 numParams += 1;
-                                gen.LoadLocalAddress(tab.curLevel-param.level, param.adr);
-                                addParamToStack(numParams);
+
+                                // if global..
+                                if (obj.level == 0){
+                                  gen.LoadIndexedGlobalAddress(param.adr);
+                                  addParamToStack(numParams, 2);
+                                }else{
+                                  gen.LoadLocalAddress(tab.curLevel-param.level, param.adr);
+                                  addParamToStack(numParams, 1);
+                                }
                               .)
       }
     ]                         (.
                                 if(numParams != obj.numParameters)
                                   SemErr("Error: incorrect number of parameters");
-
-                                // #1: add buffer to stack
-                                // #2: push addresses (loadLocalAddress) to stack space
-
                               .)
     ')' ';'                   (.
-                                  if (obj.kind == proc)
-                                    gen.Call(name);
-                                  else SemErr("object is not a procedure");
+                                // as the check is done at the beginning, call
+                                gen.Call(name);
                               .)
   )
 
@@ -398,7 +409,9 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
       {                  (.gen.GetRegister();.)
         "case"
         Expr<out reg,
-        out type>  ":"     (. int l1, l2; l1 = 0;      //stuff for recognizing cases
+        out type>  ":"     (.
+                              // labels for recognising cases
+                              int l1; l1 = 0;
                               l1 = gen.NewLabel();
                               gen.RelOp(Op.EQU, reg, switchReg);
                               gen.BranchFalse(l1);
@@ -500,6 +513,8 @@ Stat                     (. int type; string name; Obj obj; int reg = 0; int ind
   { ConstantDecl }
   { VarDecl }
   Stat { Stat }
+  { ConstantDecl }
+  { VarDecl }
   '}'                      (. tab.CloseSubScope(); .)
 .
 

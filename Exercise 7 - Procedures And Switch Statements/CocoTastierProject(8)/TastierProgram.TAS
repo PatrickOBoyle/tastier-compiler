@@ -12,6 +12,7 @@ program Test {
   int result;
 
   int i;
+
   void SumUp() {
       int j;
       int sum;

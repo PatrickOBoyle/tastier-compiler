@@ -7,6 +7,7 @@ public class Obj { // properties of declared symbol
    public int kind;    // var, proc or scope
    public int type;    // its type if var (undef for proc)
    public int subcategory; // defines a scalar or array
+   public int numParameters;     // the number of parameters a procedure has
 
    public int level;   // lexic level: 0 = global; >= 1 local
    public int adr;     // address (displacement) in scope
@@ -19,7 +20,6 @@ public class Obj { // properties of declared symbol
 
    // for arrays
    public int lastIndex; // highest index for an array
-   public int numParameters;     // the number of parameters a procedure has
 }
 
 public class SymbolTable {
